@@ -1,0 +1,42 @@
+name: Commit Message Generator
+
+on:
+  push:
+    branches:
+      - main
+      - develop  # Add other branches if needed
+
+jobs:
+  generate-commit-message:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'  # or the version you prefer
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Generate Commit Messages
+        run: |
+          # Obtain the previous commit's code (example using a Python script, adjust as needed)
+          old_code=$(git show HEAD~1:script_name.py)
+          new_code=$(cat script_name.py)
+          python scripts/generate_commit_message.py "$old_code" "$new_code" > commit_message.txt
+          
+          # Optionally, output the commit message for debugging
+          cat commit_message.txt
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'actions@github.com'
+          git commit -am "$(cat commit_message.txt)"
+          git push
