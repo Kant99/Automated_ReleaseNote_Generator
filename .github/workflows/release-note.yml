@@ -1,0 +1,34 @@
+name: Generate Release Notes
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  generate-release-notes:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install requests google-generativeai
+
+      - name: Generate Release Notes
+        id: generate_release_notes
+        run: |
+          python generate_release_notes.py
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release_notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
